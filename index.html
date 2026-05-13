@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Nitro Login</title>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- FUNDO -->
+  <div class="bg-shape"></div>
+  <div class="bg-shape"></div>
+
+  <!-- LUZ DO MOUSE -->
+  <div class="light" id="light"></div>
+
+  <!-- CARD -->
+  <div class="login-container">
+
+    <div class="login-card">
+
+      <!-- LOGIN -->
+      <div class="form login-form active">
+
+        <div class="logo">
+          <h2>NITRO</h2>
+        </div>
+
+        <div class="title">
+          <h1>Welcome Back</h1>
+          <p>Faça login para continuar</p>
+        </div>
+
+        <div class="input-group">
+          <label>Email</label>
+          <input type="email" placeholder="Digite seu email">
+        </div>
+
+        <div class="input-group">
+          <label>Senha</label>
+          <input type="password" placeholder="Digite sua senha">
+        </div>
+
+        <div class="forgot">
+          <a href="#">Esqueceu a senha?</a>
+        </div>
+
+        <button class="login-btn">
+          Login
+        </button>
+
+        <div class="signup">
+          Não possui conta?
+          <a href="#" id="show-register">Cadastrar</a>
+        </div>
+
+      </div>
+
+      <!-- CADASTRO -->
+      <div class="form register-form">
+
+        <div class="logo">
+          <h2>NITRO</h2>
+        </div>
+
+        <div class="title">
+          <h1>Create Account</h1>
+          <p>Crie sua conta para continuar</p>
+        </div>
+
+        <div class="input-group">
+          <label>Nome</label>
+          <input type="text" placeholder="Digite seu nome">
+        </div>
+
+        <div class="input-group">
+          <label>Email</label>
+          <input type="email" placeholder="Digite seu email">
+        </div>
+
+        <div class="input-group">
+          <label>Senha</label>
+          <input type="password" placeholder="Crie uma senha">
+        </div>
+
+        <button class="login-btn">
+          Cadastrar
+        </button>
+
+        <div class="signup">
+          Já possui conta?
+          <a href="#" id="show-login">Entrar</a>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+
+    // EFEITO DE LUZ
+    //FAZENDO POR AQUI PARA TESTAR E AJUSTAR MAIS RÁPIDO
+    const light = document.getElementById("light");
+
+    document.addEventListener("mousemove", (e) => {
+      light.style.left = e.clientX + "px";
+      light.style.top = e.clientY + "px";
+    });
+
+    // TROCA DE FORMULÁRIOS
+    const loginForm = document.querySelector(".login-form");
+    const registerForm = document.querySelector(".register-form");
+
+    const showRegister = document.getElementById("show-register");
+    const showLogin = document.getElementById("show-login");
+
+    // ABRIR CADASTRO
+    showRegister.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      loginForm.style.display = "none";
+      registerForm.style.display = "block";
+    });
+
+    // VOLTAR LOGIN
+    showLogin.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      registerForm.style.display = "none";
+      loginForm.style.display = "block";
+    });
+
+  </script>
+
+</body>
+</html>
