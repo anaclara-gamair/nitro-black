@@ -3,139 +3,160 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Nitro Login</title>
-
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-  <!-- FUNDO -->
   <div class="bg-shape"></div>
   <div class="bg-shape"></div>
-
-  <!-- LUZ DO MOUSE -->
   <div class="light" id="light"></div>
 
-  <!-- CARD -->
   <div class="login-container">
-
     <div class="login-card">
 
-      <!-- LOGIN -->
       <div class="form login-form active">
-
-        <div class="logo">
-          <h2>NITRO</h2>
-        </div>
-
+        <div class="logo"><h2>NITRO</h2></div>
         <div class="title">
           <h1>Welcome Back</h1>
           <p>Faça login para continuar</p>
         </div>
 
-        <div class="input-group">
-          <label>Email</label>
-          <input type="email" placeholder="Digite seu email">
-        </div>
-
-        <div class="input-group">
-          <label>Senha</label>
-          <input type="password" placeholder="Digite sua senha">
-        </div>
-
-        <div class="forgot">
-          <a href="#">Esqueceu a senha?</a>
-        </div>
-
-        <button class="login-btn">
-          Login
-        </button>
+        <form id="form-login">
+          <div class="input-group">
+            <label>Email</label>
+            <input type="email" id="login-email" placeholder="Digite seu email" required>
+          </div>
+          <div class="input-group">
+            <label>Senha</label>
+            <input type="password" id="login-senha" placeholder="Digite sua senha" required>
+          </div>
+          <button type="submit" class="login-btn">Login</button>
+        </form>
 
         <div class="signup">
-          Não possui conta?
-          <a href="#" id="show-register">Cadastrar</a>
+          Não possui conta? <a href="#" id="show-register">Cadastrar</a>
         </div>
-
       </div>
 
-      <!-- CADASTRO -->
       <div class="form register-form">
-
-        <div class="logo">
-          <h2>NITRO</h2>
-        </div>
-
+        <div class="logo"><h2>NITRO</h2></div>
         <div class="title">
           <h1>Create Account</h1>
           <p>Crie sua conta para continuar</p>
         </div>
 
-        <div class="input-group">
-          <label>Nome</label>
-          <input type="text" placeholder="Digite seu nome">
-        </div>
-
-        <div class="input-group">
-          <label>Email</label>
-          <input type="email" placeholder="Digite seu email">
-        </div>
-
-        <div class="input-group">
-          <label>Senha</label>
-          <input type="password" placeholder="Crie uma senha">
-        </div>
-
-        <button class="login-btn">
-          Cadastrar
-        </button>
+        <form id="form-register">
+          <div class="input-group">
+            <label>Nome</label>
+            <input type="text" id="reg-nome" placeholder="Digite seu nome" required>
+          </div>
+          <div class="input-group">
+            <label>Email</label>
+            <input type="email" id="reg-email" placeholder="Digite seu email" required>
+          </div>
+          <div class="input-group">
+            <label>Senha</label>
+            <input type="password" id="reg-senha" placeholder="Crie uma senha" required>
+          </div>
+          <div class="input-group">
+            <label>Carteira de Motorista (CNH)</label>
+            <input type="text" id="reg-cnh" placeholder="Nº da CNH">
+          </div>
+          <div class="input-group">
+            <label>Data de Vencimento</label>
+            <input type="date" id="reg-vencimento">
+          </div>
+          <div class="input-group" style="display:flex; align-items:center; gap: 10px; margin-bottom: 20px;">
+            <input type="checkbox" id="reg-termo" style="width: auto; margin:0;">
+            <label for="reg-termo" style="margin:0; font-size: 12px;">Não tenho CNH. Assino o termo de responsabilidade de locação.</label>
+          </div>
+          <button type="submit" class="login-btn">Cadastrar</button>
+        </form>
 
         <div class="signup">
-          Já possui conta?
-          <a href="#" id="show-login">Entrar</a>
+          Já possui conta? <a href="#" id="show-login">Entrar</a>
         </div>
-
       </div>
 
     </div>
-
   </div>
 
   <script>
+    // Se já estiver logado, vai pra home que está na pasta pages
+    if (localStorage.getItem('nitro_user')) {
+      window.location.href = 'pages/home.html';
+    }
 
-    // EFEITO DE LUZ
-    //FAZENDO POR AQUI PARA TESTAR E AJUSTAR MAIS RÁPIDO
     const light = document.getElementById("light");
-
     document.addEventListener("mousemove", (e) => {
       light.style.left = e.clientX + "px";
       light.style.top = e.clientY + "px";
     });
 
-    // TROCA DE FORMULÁRIOS
     const loginForm = document.querySelector(".login-form");
     const registerForm = document.querySelector(".register-form");
-
-    const showRegister = document.getElementById("show-register");
-    const showLogin = document.getElementById("show-login");
-
-    // ABRIR CADASTRO
-    showRegister.addEventListener("click", (e) => {
-      e.preventDefault();
-
-      loginForm.style.display = "none";
-      registerForm.style.display = "block";
+    document.getElementById("show-register").addEventListener("click", (e) => {
+      e.preventDefault(); loginForm.style.display = "none"; registerForm.style.display = "block";
+    });
+    document.getElementById("show-login").addEventListener("click", (e) => {
+      e.preventDefault(); registerForm.style.display = "none"; loginForm.style.display = "block";
     });
 
-    // VOLTAR LOGIN
-    showLogin.addEventListener("click", (e) => {
-      e.preventDefault();
+    const termoCheckbox = document.getElementById('reg-termo');
+    const cnhInput = document.getElementById('reg-cnh');
+    const vencInput = document.getElementById('reg-vencimento');
 
-      registerForm.style.display = "none";
-      loginForm.style.display = "block";
+    termoCheckbox.addEventListener('change', () => {
+      if(termoCheckbox.checked) {
+        cnhInput.disabled = true; cnhInput.value = '';
+        vencInput.disabled = true; vencInput.value = '';
+      } else {
+        cnhInput.disabled = false; vencInput.disabled = false;
+      }
     });
 
+    // Submissão do Login (Atenção ao caminho: script/php/auth.php)
+    document.getElementById('form-login').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('action', 'login');
+      formData.append('email', document.getElementById('login-email').value);
+      formData.append('senha', document.getElementById('login-senha').value);
+
+      const res = await fetch('script/php/auth.php', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if(data.status === 'success') {
+        localStorage.setItem('nitro_user', JSON.stringify(data.user));
+        window.location.href = 'pages/home.html'; // Redireciona para a pasta pages
+      } else {
+        alert(data.message);
+      }
+    });
+
+    // Submissão do Cadastro
+    document.getElementById('form-register').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('action', 'register');
+      formData.append('nome', document.getElementById('reg-nome').value);
+      formData.append('email', document.getElementById('reg-email').value);
+      formData.append('senha', document.getElementById('reg-senha').value);
+      formData.append('carteira', document.getElementById('reg-cnh').value);
+      formData.append('vencimento', document.getElementById('reg-vencimento').value);
+      formData.append('termo', document.getElementById('reg-termo').checked);
+
+      const res = await fetch('script/php/auth.php', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if(data.status === 'success') {
+        alert("Cadastro realizado! Faça login.");
+        document.getElementById("show-login").click();
+      } else {
+        alert(data.message);
+      }
+    });
   </script>
-
 </body>
 </html>

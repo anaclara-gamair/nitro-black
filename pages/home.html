@@ -3,281 +3,79 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Nitro Black</title>
-
-  <!-- ICONS -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-  />
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="/nitro-black/css/home.css">
+  <title>Nitro Black - Home</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link rel="stylesheet" href="../css/home.css">
+  <style>
+    select { height: 60px; border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; background: rgba(255,255,255,0.05); color: white; padding: 0 20px; outline: none; width: 100%; }
+    select option { background: #07000f; color: white; }
+  </style>
 </head>
-
 <body>
 
-  <!-- BACKGROUND -->
   <div class="bg-glow glow-1"></div>
   <div class="bg-glow glow-2"></div>
 
-  <!-- HEADER -->
   <header class="header">
-
-    <div class="logo">
-      Nitro<span>Black</span>
-    </div>
-
+    <div class="logo">Nitro<span>Black</span></div>
     <nav class="nav">
-
       <a href="#">Home</a>
-      <a href="#">Sobre</a>
       <a href="#">Veículos</a>
       <a href="#">Contato</a>
-
-      <button class="login-header">
-        Entrar
-      </button>
-
+      <div id="user-container">
+        <button class="login-header" onclick="window.location.href='../index.html'">Entrar</button>
+      </div>
     </nav>
-
   </header>
 
-  <!-- HERO -->
   <section class="hero">
-
     <div class="hero-overlay"></div>
-
     <div class="hero-content">
+      <h1>Alugue carros premium em segundos</h1>
+      <p>Experiência premium, veículos esportivos e tecnologia moderna.</p>
 
-      <h1>
-        Alugue carros premium em segundos
-      </h1>
-
-      <p>
-        Experiência premium, veículos esportivos e tecnologia moderna.
-      </p>
-
-      <!-- SEARCH BOX -->
-      <div class="search-box">
-
+      <div class="search-box" style="grid-template-columns: repeat(3, 1fr);">
         <div class="search-input">
-            <label>Local</label>
-            <input type="text" placeholder="Divinópolis, MG">
-          </div>
-          
-          <div class="search-input">
-            <label>Retirada</label>
-            <input type="date">
-          </div>
-          
-          <div class="search-input">
-            <label>Devolução</label>
-            <input type="date">
-          </div>
-        <!--======================-->
-
-        <button class="search-btn">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          Buscar
-        </button>
-
+          <label>Região</label>
+          <select id="regiao-select">
+            <option value="">Selecione uma região</option>
+            <option value="MG">Minas Gerais (MG)</option>
+            <option value="SP">São Paulo (SP)</option>
+          </select>
+        </div>
+        <div class="search-input">
+          <label>Agência de Retirada</label>
+          <select id="retirada-select" disabled><option value="">Escolha a região primeiro</option></select>
+        </div>
+        <div class="search-input">
+          <label>Agência de Devolução</label>
+          <select id="devolucao-select" disabled><option value="">Escolha a região primeiro</option></select>
+        </div>
+        <div class="search-input"><label>Retirada</label><input type="date"></div>
+        <div class="search-input"><label>Devolução</label><input type="date"></div>
+        <button class="search-btn" style="height: 60px; margin-top: 25px;"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
       </div>
-
     </div>
-
   </section>
 
-  <!-- INFO BAR -->
   <section class="info-bar">
-
-    <div class="info-item">
-      <i class="fa-solid fa-shield-halved"></i>
-      Segurança premium
-    </div>
-
-    <div class="info-item">
-      <i class="fa-solid fa-car"></i>
-      Frota esportiva
-    </div>
-
-    <div class="info-item">
-      <i class="fa-solid fa-bolt"></i>
-      Reserva instantânea
-    </div>
-
+    <div class="info-item"><i class="fa-solid fa-shield-halved"></i> Segurança premium</div>
+    <div class="info-item"><i class="fa-solid fa-car"></i> Frota esportiva</div>
+    <div class="info-item"><i class="fa-solid fa-bolt"></i> Reserva instantânea</div>
   </section>
 
-  <!-- AVAILABLE CARS -->
   <section class="cars-section">
-
     <div class="section-title">
       <h2>Disponíveis Hoje</h2>
       <p>Os carros mais procurados da Nitro Black</p>
     </div>
 
-    <div class="cars-grid">
-
-      <!-- CARD -->
-      <div class="car-card">
-
-        <div class="car-image">
-          <img src="https://images.unsplash.com/photo-1553440569-bcc63803a83d?q=80&w=1200&auto=format&fit=crop" alt="">
-        </div>
-
-        <div class="car-content">
-
-          <h3>Porsche 911</h3>
-
-          <span class="car-type">
-            Esportivo Premium
-          </span>
-
-          <div class="car-info">
-
-            <span>
-              <i class="fa-solid fa-user"></i>
-              2
-            </span>
-
-            <span>
-              <i class="fa-solid fa-gauge-high"></i>
-              650cv
-            </span>
-
-            <span>
-              <i class="fa-solid fa-gas-pump"></i>
-              Turbo
-            </span>
-
-          </div>
-
-          <div class="car-footer">
-
-            <div>
-              <small>Diária</small>
-              <h4>R$ 1.299</h4>
-            </div>
-
-            <button>
-              Reservar
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      <!-- CARD -->
-      <div class="car-card">
-
-        <div class="car-image">
-          <img src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=1200&auto=format&fit=crop" alt="">
-        </div>
-
-        <div class="car-content">
-
-          <h3>Mustang GT</h3>
-
-          <span class="car-type">
-            Muscle Car
-          </span>
-
-          <div class="car-info">
-
-            <span>
-              <i class="fa-solid fa-user"></i>
-              4
-            </span>
-
-            <span>
-              <i class="fa-solid fa-gauge-high"></i>
-              480cv
-            </span>
-
-            <span>
-              <i class="fa-solid fa-gas-pump"></i>
-              V8
-            </span>
-
-          </div>
-
-          <div class="car-footer">
-
-            <div>
-              <small>Diária</small>
-              <h4>R$ 899</h4>
-            </div>
-
-            <button>
-              Reservar
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      <!-- CARD -->
-      <div class="car-card">
-
-        <div class="car-image">
-          <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200&auto=format&fit=crop" alt="">
-        </div>
-
-        <div class="car-content">
-
-          <h3>Lamborghini Huracán</h3>
-
-          <span class="car-type">
-            Supercar
-          </span>
-
-          <div class="car-info">
-
-            <span>
-              <i class="fa-solid fa-user"></i>
-              2
-            </span>
-
-            <span>
-              <i class="fa-solid fa-gauge-high"></i>
-              640cv
-            </span>
-
-            <span>
-              <i class="fa-solid fa-gas-pump"></i>
-              V10
-            </span>
-
-          </div>
-
-          <div class="car-footer">
-
-            <div>
-              <small>Diária</small>
-              <h4>R$ 2.499</h4>
-            </div>
-
-            <button>
-              Reservar
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
+    <div class="cars-grid" id="cars-grid">
+      <p style="text-align: center; width: 100%; color: white;">Carregando frota...</p>
     </div>
-
   </section>
 
-  <!-- SCRIPT -->
-  <script src="/nitro-black/script/script.js"></script>
+  <script src="../script/js/script.js"></script>
 
 </body>
 </html>
