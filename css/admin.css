@@ -463,3 +463,116 @@ body{
     }
 
 }
+
+/* --- NOVOS ESTILOS PARA O PAINEL DINÂMICO --- */
+
+/* Ocultar seções não ativas */
+.admin-section {
+    display: none;
+    animation: fadeIn 0.4s;
+}
+
+.admin-section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.section-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-top .primary-btn {
+    width: auto;
+    height: 45px;
+    padding: 0 20px;
+    margin: 0;
+}
+
+/* Modais (Popups) */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal-content {
+    background: #12091d;
+    border: 1px solid rgba(157,77,255,0.4);
+    border-radius: 24px;
+    padding: 30px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 0 40px rgba(125,67,255,0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.close-modal {
+    font-size: 1.5rem;
+    color: #a7a7c7;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.close-modal:hover { color: #ff4d4d; }
+
+/* Tabela de Usuários */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table th, .admin-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.admin-table th { color: #a855ff; }
+.admin-table tr:hover { background: rgba(255,255,255,0.02); }
+
+.action-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    margin-right: 10px;
+    transition: 0.3s;
+}
+
+.btn-edit { color: #4dabf7; }
+.btn-delete { color: #ff6b6b; }
+.action-btn:hover { transform: scale(1.2); }
+
+/* Grid de Carros no Admin */
+.admin-cars-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+.admin-car-card {
+    background: rgba(18,18,30,0.82);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 15px;
+}
+.admin-car-card img { width: 100%; height: 160px; object-fit: cover; border-radius: 12px; }
+.admin-car-actions { display: flex; justify-content: space-between; margin-top: 15px; }

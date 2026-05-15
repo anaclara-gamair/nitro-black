@@ -4,265 +4,157 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Painel Admin | NitroBlack</title>
-
     <link rel="stylesheet" href="../css/admin.css" />
-
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 </head>
 <body>
 
-    <!-- HEADER FIXO -->
     <header class="top-header">
-        <div class="logo">
-            Nitro<span>Black</span>
-        </div>
-
+        <div class="logo">Nitro<span>Black</span></div>
         <nav class="header-nav">
-            <a href="#">Home</a>
-            <a href="#">Veículos</a>
-            <a href="#">Contato</a>
-            <a href="#" class="user-name">Olá, Ana Clara</a>
-
-            <button class="logout-btn">
-                Sair
-            </button>
+            <a href="../pages/home.html">Home</a>
+            <a href="#" class="user-name" id="admin-name">Olá, Admin</a>
+            <button class="logout-btn" onclick="logout()">Sair</button>
         </nav>
     </header>
 
-    <!-- CONTAINER -->
     <div class="dashboard-container">
 
-        <!-- SIDEBAR -->
         <aside class="sidebar">
-
             <div class="sidebar-top">
                 <h2>Admin Panel</h2>
                 <p>Cyber Dashboard</p>
             </div>
-
             <nav class="sidebar-menu">
-
-                <button class="menu-item active">
-                    <i class="fa-solid fa-users"></i>
-                    Usuários
+                <button class="menu-item active" data-target="sec-dashboard">
+                    <i class="fa-solid fa-chart-column"></i> Dashboard
                 </button>
-
-                <button class="menu-item">
-                    <i class="fa-solid fa-car-side"></i>
-                    Veículos
+                <button class="menu-item" data-target="sec-users">
+                    <i class="fa-solid fa-users"></i> Usuários
                 </button>
-
-                <button class="menu-item">
-                    <i class="fa-solid fa-chart-column"></i>
-                    Relatórios
+                <button class="menu-item" data-target="sec-cars">
+                    <i class="fa-solid fa-car-side"></i> Veículos
                 </button>
-
-                <button class="menu-item">
-                    <i class="fa-solid fa-money-bill-trend-up"></i>
-                    Financeiro
-                </button>
-
-                <button class="menu-item">
-                    <i class="fa-solid fa-gear"></i>
-                    Configurações
-                </button>
-
             </nav>
-
         </aside>
 
-        <!-- CONTEÚDO -->
         <main class="main-content">
 
-            <!-- HERO -->
-            <section class="hero-card">
-                <div>
-                    <h1>Gerenciamento NitroBlack</h1>
-                    <p>
-                        Controle usuários, veículos e relatórios financeiros
-                        em um painel cyberpunk premium.
-                    </p>
+            <section id="sec-dashboard" class="admin-section active">
+                <section class="hero-card">
+                    <div>
+                        <h1>Gerenciamento NitroBlack</h1>
+                        <p>Controle usuários, veículos e relatórios em um painel cyberpunk premium.</p>
+                    </div>
+                </section>
+                <div class="dashboard-grid">
+                    <section class="card small-card">
+                        <div class="card-header">
+                            <h2>Aluguéis Mensais</h2>
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <div class="stats-area">
+                            <div class="stat-box"><span>Janeiro</span><h3>42</h3></div>
+                            <div class="stat-box"><span>Fevereiro</span><h3>58</h3></div>
+                        </div>
+                    </section>
+                    <section class="card small-card">
+                        <div class="card-header">
+                            <h2>Financeiro</h2>
+                            <i class="fa-solid fa-wallet"></i>
+                        </div>
+                        <div class="money-box">
+                            <span>Total faturado</span>
+                            <h1>R$ 845.000</h1>
+                            <button class="excel-btn"><i class="fa-solid fa-file-export"></i> Exportar Excel</button>
+                        </div>
+                    </section>
                 </div>
-
-                <button class="hero-btn">
-                    Novo Relatório
-                </button>
             </section>
 
-            <!-- GRID -->
-            <div class="dashboard-grid">
+            <section id="sec-users" class="admin-section">
+                <div class="section-top">
+                    <h2>Gerenciar Usuários</h2>
+                    <button class="primary-btn" onclick="openModal('modal-user')"><i class="fa-solid fa-plus"></i> Novo Usuário</button>
+                </div>
+                <div class="card" style="margin-top: 20px;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>CNH</th>
+                                <th>Admin?</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-tbody">
+                            </tbody>
+                    </table>
+                </div>
+            </section>
 
-                <!-- USERS -->
-                <section class="card large-card">
-                    <div class="card-header">
-                        <h2>Adicionar Usuário</h2>
-                        <i class="fa-solid fa-user-plus"></i>
+            <section id="sec-cars" class="admin-section">
+                <div class="section-top">
+                    <h2>Gerenciar Veículos</h2>
+                    <button class="primary-btn" onclick="openModal('modal-car')"><i class="fa-solid fa-plus"></i> Novo Veículo</button>
+                </div>
+                <div class="admin-cars-grid" id="admin-cars-grid" style="margin-top: 20px;">
                     </div>
-
-                    <form class="form-grid">
-
-                        <div class="input-group">
-                            <label>Nome</label>
-                            <input type="text" placeholder="Digite o nome" />
-                        </div>
-
-                        <div class="input-group">
-                            <label>Email</label>
-                            <input type="email" placeholder="Digite o email" />
-                        </div>
-
-                        <div class="input-group">
-                            <label>Senha</label>
-                            <input type="password" placeholder="Digite a senha" />
-                        </div>
-
-                        <div class="input-group">
-                            <label>CNH</label>
-                            <input type="text" placeholder="Número da carteira" />
-                        </div>
-
-                        <div class="input-group">
-                            <label>Vencimento CNH</label>
-                            <input type="date" />
-                        </div>
-
-                        <div class="input-group">
-                            <label>Tipo de Usuário</label>
-
-                            <select>
-                                <option>Usuário Normal</option>
-                                <option>Administrador</option>
-                            </select>
-                        </div>
-
-                        <button type="submit" class="primary-btn">
-                            Criar Usuário
-                        </button>
-
-                    </form>
-                </section>
-
-                <!-- CARROS -->
-                <section class="card large-card">
-                    <div class="card-header">
-                        <h2>Adicionar Veículo</h2>
-                        <i class="fa-solid fa-car"></i>
-                    </div>
-
-                    <form class="form-grid">
-
-                        <div class="input-group">
-                            <label>Marca / Modelo</label>
-                            <input type="text" />
-                        </div>
-
-                        <div class="input-group">
-                            <label>Placa</label>
-                            <input type="text" />
-                        </div>
-
-                        <div class="input-group">
-                            <label>Ano</label>
-                            <input type="number" />
-                        </div>
-
-                        <div class="input-group">
-                            <label>Valor diária</label>
-                            <input type="number" />
-                        </div>
-
-                        <div class="input-group">
-                            <label>Cor</label>
-                            <input type="text" />
-                        </div>
-
-                        <div class="input-group">
-                            <label>KM</label>
-                            <input type="number" />
-                        </div>
-
-                        <div class="input-group full-width">
-                            <label>Detalhes Técnicos</label>
-                            <textarea></textarea>
-                        </div>
-
-                        <div class="input-group full-width">
-                            <label>Acessórios</label>
-                            <textarea></textarea>
-                        </div>
-
-                        <div class="input-group full-width">
-                            <label>Foto do veículo</label>
-                            <input type="file" />
-                        </div>
-
-                        <button type="submit" class="primary-btn">
-                            Adicionar Veículo
-                        </button>
-
-                    </form>
-                </section>
-
-                <!-- RELATÓRIO -->
-                <section class="card small-card">
-
-                    <div class="card-header">
-                        <h2>Aluguéis Mensais</h2>
-                        <i class="fa-solid fa-chart-line"></i>
-                    </div>
-
-                    <div class="stats-area">
-
-                        <div class="stat-box">
-                            <span>Janeiro</span>
-                            <h3>42</h3>
-                        </div>
-
-                        <div class="stat-box">
-                            <span>Fevereiro</span>
-                            <h3>58</h3>
-                        </div>
-
-                        <div class="stat-box">
-                            <span>Março</span>
-                            <h3>73</h3>
-                        </div>
-
-                    </div>
-
-                </section>
-
-                <!-- FINANCEIRO -->
-                <section class="card small-card">
-
-                    <div class="card-header">
-                        <h2>Financeiro</h2>
-                        <i class="fa-solid fa-wallet"></i>
-                    </div>
-
-                    <div class="money-box">
-                        <span>Total faturado</span>
-
-                        <h1>R$ 845.000</h1>
-
-                        <button class="excel-btn">
-                            <i class="fa-solid fa-file-export"></i>
-                            Exportar Excel
-                        </button>
-                    </div>
-
-                </section>
-
-            </div>
+            </section>
 
         </main>
-
     </div>
 
-    <script src="/nitro-black/script/js/admin.js"></script>
+    <div id="modal-user" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Adicionar Usuário</h2>
+                <i class="fa-solid fa-xmark close-modal" onclick="closeModal('modal-user')"></i>
+            </div>
+            <form id="form-add-user" class="form-grid">
+                <div class="input-group"><label>Nome</label><input type="text" id="add-u-nome" required /></div>
+                <div class="input-group"><label>Email</label><input type="email" id="add-u-email" required /></div>
+                <div class="input-group"><label>Senha</label><input type="password" id="add-u-senha" required /></div>
+                <div class="input-group"><label>Tipo</label>
+                    <select id="add-u-admin">
+                        <option value="0">Cliente</option>
+                        <option value="1">Administrador</option>
+                    </select>
+                </div>
+                <div class="input-group"><label>CNH (Opcional)</label><input type="text" id="add-u-cnh" /></div>
+                <div class="input-group"><label>Vencimento CNH</label><input type="date" id="add-u-venc" /></div>
+                <button type="submit" class="primary-btn full-width">Salvar Usuário</button>
+            </form>
+        </div>
+    </div>
 
+    <div id="modal-car" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Adicionar Veículo</h2>
+                <i class="fa-solid fa-xmark close-modal" onclick="closeModal('modal-car')"></i>
+            </div>
+            <form id="form-add-car" class="form-grid">
+                <div class="input-group full-width">
+                    <label>Link da Imagem (URL)</label>
+                    <input type="url" id="add-c-img" placeholder="Cole o link da foto aqui..." required />
+                    <div id="img-preview-container" style="display:none; margin-top: 10px; border-radius: 14px; overflow: hidden; height: 150px;">
+                        <img id="car-img-preview" src="" style="width: 100%; height: 100%; object-fit: cover;" />
+                    </div>
+                </div>
+
+                <div class="input-group"><label>Marca / Modelo</label><input type="text" id="add-c-modelo" required /></div>
+                <div class="input-group"><label>Placa</label><input type="text" id="add-c-placa" required /></div>
+                <div class="input-group"><label>Valor Diária (R$)</label><input type="number" id="add-c-valor" required /></div>
+                <div class="input-group"><label>Ano</label><input type="number" id="add-c-ano" required /></div>
+                
+                <button type="submit" class="primary-btn full-width" onclick="alert('Cadastro de veículo será implementado no backend PHP em breve.')">Salvar Veículo</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../script/js/admin.js"></script>
 </body>
 </html>
