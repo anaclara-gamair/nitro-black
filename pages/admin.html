@@ -106,8 +106,7 @@
 
         </main>
     </div>
-
-    <div id="modal-user" class="modal-overlay">
+<div id="modal-user" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Adicionar Usuário</h2>
@@ -123,20 +122,27 @@
                         <option value="1">Administrador</option>
                     </select>
                 </div>
-                <div class="input-group"><label>CNH (Opcional)</label><input type="text" id="add-u-cnh" /></div>
+                <div class="input-group"><label>CNH</label><input type="text" id="add-u-cnh" /></div>
                 <div class="input-group"><label>Vencimento CNH</label><input type="date" id="add-u-venc" /></div>
+                
+                <div class="input-group full-width" style="display:flex; flex-direction: row; align-items:center; gap: 10px;">
+                    <input type="checkbox" id="add-u-termo" style="width: auto; margin:0;">
+                    <label for="add-u-termo" style="margin:0; font-size: 13px;">Sem CNH (Assinar termo de responsabilidade)</label>
+                </div>
+
                 <button type="submit" class="primary-btn full-width">Salvar Usuário</button>
             </form>
         </div>
     </div>
 
-    <div id="modal-car" class="modal-overlay">
+   <div id="modal-car" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Adicionar Veículo</h2>
                 <i class="fa-solid fa-xmark close-modal" onclick="closeModal('modal-car')"></i>
             </div>
             <form id="form-add-car" class="form-grid">
+                
                 <div class="input-group full-width">
                     <label>Link da Imagem (URL)</label>
                     <input type="url" id="add-c-img" placeholder="Cole o link da foto aqui..." required />
@@ -149,12 +155,37 @@
                 <div class="input-group"><label>Placa</label><input type="text" id="add-c-placa" required /></div>
                 <div class="input-group"><label>Valor Diária (R$)</label><input type="number" id="add-c-valor" required /></div>
                 <div class="input-group"><label>Ano</label><input type="number" id="add-c-ano" required /></div>
+                <div class="input-group"><label>Cor</label><input type="text" id="add-c-cor" required /></div>
+                <div class="input-group"><label>KM</label><input type="number" id="add-c-km" required /></div>
                 
-                <button type="submit" class="primary-btn full-width" onclick="alert('Cadastro de veículo será implementado no backend PHP em breve.')">Salvar Veículo</button>
+                <div class="input-group">
+                    <label>Estado de Uso (1 a 5)</label>
+                    <input type="number" min="1" max="5" id="add-c-estado" value="5" required />
+                </div>
+                
+                <div class="input-group">
+                    <label>Agência de Localização</label>
+                    <select id="add-c-location" required>
+                        <option value="1">Agência Centro Divinópolis</option>
+                        <option value="2">Agência Aeroporto BH</option>
+                        <option value="3">Agência Paulista SP</option>
+                    </select>
+                </div>
+
+                <div class="input-group full-width">
+                    <label>Detalhes Técnicos</label>
+                    <textarea id="add-c-detalhes" placeholder="Ex: Motor V8, Tração integral..." required></textarea>
+                </div>
+
+                <div class="input-group full-width">
+                    <label>Acessórios</label>
+                    <textarea id="add-c-acessorios" placeholder="Ex: Teto solar, Bancos de couro..." required></textarea>
+                </div>
+
+                <button type="submit" class="primary-btn full-width">Salvar Veículo</button>
             </form>
         </div>
     </div>
-
     <script src="../script/js/admin.js"></script>
 </body>
 </html>

@@ -11,17 +11,38 @@ try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Aceita tanto GET quanto POST para a variável 'action'
     $action = $_REQUEST['action'] ?? '';
 
     // ==========================================
-    // BUSCAR TODOS OS USUÁRIOS
+    // BUSCAR USUÁRIOS
     // ==========================================
     if ($action === 'get_users') {
         $stmt = $pdo->query("SELECT id, nome, email, carteira, vencimento_carteira, termo_responsabilidade, eh_admin FROM users");
-        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode(["status" => "success", "users" => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+        exit;
+    }
 
-        echo json_encode(["status" => "success", "users" => $users]);
+    // ==========================================
+    // ADICIONAR USUÁRIO
+    // ==========================================
+    if ($action === 'add_user') {
+        $nome = $_POST['nome'] ?? '';
+        $email = $_POST['email'] ?? '';
+        $senha = password_hash($_POST['senha'], PASSWORD_DEFAULT);
+        $carteira = $_POST['carteira'] ?? null;
+        $vencimento = $_POST['vencimento'] ?? null;
+        $termo = isset($_POST['termo']) && $_POST['termo'] == 'true' ? 1 : 0;
+        $eh_admin = $_POST['eh_admin'] ?? 0;
+
+        if ($termo) { $carteira = null; $vencimento = null; }
+
+        try {
+            $stmt = $pdo->prepare("INSERT INTO users (nome, email, senha, carteira, vencimento_carteira, termo_responsabilidade, eh_admin) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$nome, $email, $senha, $carteira, $vencimento, $termo, $eh_admin]);
+            echo json_encode(["status" => "success", "message" => "Usuário cadastrado com sucesso!"]);
+        } catch (PDOException $e) {
+            echo json_encode(["status" => "error", "message" => "Erro ao cadastrar. Detalhe: " . $e->getMessage()]);
+        }
         exit;
     }
 
@@ -29,14 +50,42 @@ try {
     // DELETAR USUÁRIO
     // ==========================================
     if ($action === 'delete_user') {
-        $id = $_POST['id'] ?? null;
+        $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
+        $stmt->execute([$_POST['id']]);
+        echo json_encode(["status" => "success", "message" => "Usuário removido!"]);
+        exit;
+    }
 
-        if ($id) {
-            $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
-            $stmt->execute([$id]);
-            echo json_encode(["status" => "success", "message" => "Usuário removido com sucesso!"]);
-        } else {
-            echo json_encode(["status" => "error", "message" => "ID do usuário não fornecido."]);
+    // ==========================================
+    // ADICIONAR CARRO (Dupla Inserção)
+    // ==========================================
+    if ($action === 'add_car') {
+        try {
+            // Inicia uma transação (Se der erro em uma tabela, cancela a outra)
+            $pdo->beginTransaction();
+
+            // 1º Insere na tabela Descricoes_Veiculo
+            $stmtDesc = $pdo->prepare("INSERT INTO Descricoes_Veiculo (cor, acessorios, detalhes_tecnicos, estado_de_uso, km) VALUES (?, ?, ?, ?, ?)");
+            $stmtDesc->execute([
+                $_POST['cor'], $_POST['acessorios'], $_POST['detalhes_tecnicos'], $_POST['estado_de_uso'], $_POST['km']
+            ]);
+            
+            // Pega o ID da descrição que acabamos de criar
+            $id_descricao = $pdo->lastInsertId();
+
+            // 2º Insere na tabela Carros
+            $stmtCar = $pdo->prepare("INSERT INTO Carros (id_descricao, placa, marca_modelo, ano, valor_aluguel_dia, foto_url, status, location_id) VALUES (?, ?, ?, ?, ?, ?, 1, ?)");
+            $stmtCar->execute([
+                $id_descricao, $_POST['placa'], $_POST['marca_modelo'], $_POST['ano'], $_POST['valor_aluguel_dia'], $_POST['foto_url'], $_POST['location_id']
+            ]);
+
+            // Confirma as duas operações
+            $pdo->commit();
+            echo json_encode(["status" => "success", "message" => "Veículo cadastrado com sucesso!"]);
+
+        } catch (PDOException $e) {
+            $pdo->rollBack(); // Cancela tudo se der erro
+            echo json_encode(["status" => "error", "message" => "Erro ao cadastrar veículo: " . $e->getMessage()]);
         }
         exit;
     }
@@ -45,38 +94,23 @@ try {
     // DELETAR VEÍCULO
     // ==========================================
     if ($action === 'delete_car') {
-        $id = $_POST['id'] ?? null;
+        $id = $_POST['id'];
+        $stmtInfo = $pdo->prepare("SELECT id_descricao FROM Carros WHERE id = ?");
+        $stmtInfo->execute([$id]);
+        $carro = $stmtInfo->fetch(PDO::FETCH_ASSOC);
 
-        if ($id) {
-            // 1º: Pega o ID da descrição para apagar depois
-            $stmtInfo = $pdo->prepare("SELECT id_descricao FROM Carros WHERE id = ?");
-            $stmtInfo->execute([$id]);
-            $carro = $stmtInfo->fetch(PDO::FETCH_ASSOC);
-
-            // 2º: Apaga o Carro
-            $stmt = $pdo->prepare("DELETE FROM Carros WHERE id = ?");
-            $stmt->execute([$id]);
-
-            // 3º: Apaga a Descrição que estava vinculada a ele
-            if ($carro && $carro['id_descricao']) {
-                $stmtDesc = $pdo->prepare("DELETE FROM Descricoes_Veiculo WHERE id = ?");
-                $stmtDesc->execute([$carro['id_descricao']]);
-            }
-
-            echo json_encode(["status" => "success", "message" => "Veículo removido com sucesso!"]);
-        } else {
-            echo json_encode(["status" => "error", "message" => "ID do veículo não fornecido."]);
+        $pdo->prepare("DELETE FROM Carros WHERE id = ?")->execute([$id]);
+        
+        if ($carro && $carro['id_descricao']) {
+            $pdo->prepare("DELETE FROM Descricoes_Veiculo WHERE id = ?")->execute([$carro['id_descricao']]);
         }
+        echo json_encode(["status" => "success", "message" => "Veículo removido com sucesso!"]);
         exit;
     }
 
-    echo json_encode(["status" => "error", "message" => "Nenhuma ação válida foi solicitada."]);
-
 } catch (PDOException $e) {
-    // Código 23000 do MySQL significa que existe restrição de chave estrangeira
-    // Exemplo: tentar apagar um carro que já está registrado em uma reserva no banco
     if ($e->getCode() == '23000') {
-        echo json_encode(["status" => "error", "message" => "Bloqueado: Este registro está vinculado a uma reserva ou histórico existente."]);
+        echo json_encode(["status" => "error", "message" => "Bloqueado: Registro vinculado a outra tabela."]);
     } else {
         echo json_encode(["status" => "error", "message" => "Erro: " . $e->getMessage()]);
     }
