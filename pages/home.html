@@ -75,6 +75,94 @@
     </div>
   </section>
 
+
+
+  <!-- MODAL RESERVA -->
+
+<div class="modal-reserva" id="modalReserva">
+
+  <div class="modal-content">
+
+    <button class="close-modal" onclick="fecharReserva()">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+
+    <h2>Reservar veículo</h2>
+
+    <p class="modal-subtitle">
+      Complete os dados da sua reserva
+    </p>
+
+    <div class="modal-form">
+
+      <div class="input-group">
+        <label>Data de retirada</label>
+        <input type="date" id="dataRetirada">
+      </div>
+
+      <div class="input-group">
+        <label>Data de devolução</label>
+        <input type="date" id="dataDevolucao">
+      </div>
+
+      <div class="input-group">
+        <label>Agência</label>
+
+        <select id="agenciaReserva">
+          <option value="">Selecione uma agência</option>
+          <option value="São Paulo">São Paulo</option>
+          <option value="Minas Gerais">Minas Gerais</option>
+        </select>
+      </div>
+
+      <div class="payment-alert">
+        <i class="fa-solid fa-circle-info"></i>
+
+        O pagamento será realizado presencialmente
+        no momento da retirada do veículo.
+      </div>
+
+      <button class="confirm-btn" onclick="confirmarReserva()">
+        Confirmar Reserva
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- CARRINHO -->
+
+<div class="cart-floating" id="cartFloating">
+
+  <i class="fa-solid fa-cart-shopping"></i>
+
+  <span id="cartCount">0</span>
+
+</div>
+
+<div class="modal-reserva" id="modalCarrinho">
+
+  <div class="modal-content">
+
+    <button class="close-modal" onclick="fecharCarrinho()">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+
+    <h2>Minhas Reservas</h2>
+
+    <p class="modal-subtitle">
+      Veículos reservados
+    </p>
+
+    <div id="listaReservas"></div>
+
+  </div>
+
+</div>
+
+
   <script src="../script/js/script.js"></script>
 
 </body>

@@ -5,14 +5,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if(userDataStr && userContainer) {
         const user = JSON.parse(userDataStr);
+        console.log(user);
         userContainer.innerHTML = `
-            <span style="color:#d7c7ff; font-weight:500; margin-right: 15px;">
-              Olá, <b style="color: white;">${user.nome}</b>
-            </span>
-            <button class="login-header" onclick="logout()" style="background: transparent; border: 1px solid #bb86fc;">
-              Sair
-            </button>
-        `;
+    ${user.eh_admin == 1 ? `
+      <a href="admin.html" style="
+        color: white;
+        font-size: 20px;
+        margin-right: 18px;
+        text-decoration: none;
+      ">
+        <i class="fa-solid fa-gear"></i>
+      </a>
+    ` : ''}
+
+    <span style="color:#d7c7ff; font-weight:500; margin-right: 15px;">
+      Olá, <b style="color: white;">${user.nome}</b>
+    </span>
+
+    <button class="login-header" onclick="logout()" style="background: transparent; border: 1px solid #bb86fc;">
+      Sair
+    </button>
+`;
     }
 
     // Carregar os carros do banco
@@ -61,16 +74,21 @@ async function loadCars() {
                       </p>
 
                       <div class="car-footer">
-                        <div>
-                          <small>Diária</small>
-                          <h4>R$ ${precoFormatado}</h4>
+                          <div>
+                            <small>Diária</small>
+                            <h4>R$ ${precoFormatado}</h4>
+                          </div>
+
+                          <button
+                            onclick="abrirReserva(
+                            '${carro.marca_modelo}',
+                            '${carro.foto_url}',
+                            '${precoFormatado}'
+                            )"
+                            >
+                                Reservar
+                            </button>
                         </div>
-                        <button onclick="alert('Iniciando reserva do veículo ${carro.marca_modelo} (ID: ${carro.id})')">
-                          Reservar
-                        </button>
-                      </div>
-                    </div>
-                </div>
                 `;
             });
         } else {
@@ -95,6 +113,7 @@ const agencies = {
 };
 
 const regiaoSelect = document.getElementById('regiao-select');
+let reservas = [];
 const retiradaSelect = document.getElementById('retirada-select');
 const devolucaoSelect = document.getElementById('devolucao-select');
 
@@ -118,4 +137,140 @@ if(regiaoSelect) {
             devolucaoSelect.innerHTML = '<option value="">Escolha a região primeiro</option>';
         }
     });
+}
+
+let carrinho = 0;
+
+function abrirReserva(nome, foto, preco){
+
+  document.getElementById('modalReserva')
+  .style.display = 'flex';
+
+  window.carroSelecionado = {
+      nome,
+      foto,
+      preco
+  };
+
+}
+
+function fecharReserva(){
+
+    document.getElementById('modalReserva').style.display = 'none';
+
+}
+
+function confirmarReserva(){
+
+  const retirada =
+  document.getElementById('dataRetirada').value;
+
+  const devolucao =
+  document.getElementById('dataDevolucao').value;
+
+  const agencia =
+  document.getElementById('agenciaReserva').value;
+
+  if(!retirada || !devolucao || !agencia){
+
+      alert('Preencha todos os campos.');
+
+      return;
+
+  }
+
+  reservas.push({
+
+      nome: window.carroSelecionado.nome,
+
+      foto: window.carroSelecionado.foto,
+
+      preco: window.carroSelecionado.preco,
+
+      retirada,
+      devolucao,
+      agencia
+
+  });
+
+  carrinho++;
+
+  document.getElementById('cartCount')
+  .innerText = carrinho;
+
+  document.getElementById('cartFloating')
+  .style.display = 'flex';
+
+  fecharReserva();
+
+  alert(
+      'Reserva adicionada ao carrinho!'
+  );
+
+}
+
+document.getElementById('cartFloating')
+.addEventListener('click', abrirCarrinho);
+
+function abrirCarrinho(){
+
+    document.getElementById('modalCarrinho')
+    .style.display = 'flex';
+
+    const lista =
+    document.getElementById('listaReservas');
+
+    lista.innerHTML = '';
+
+    reservas.forEach(reserva => {
+
+        lista.innerHTML += `
+
+        <div class="reserva-card">
+
+            <img src="${reserva.foto}">
+
+            <div class="reserva-info">
+
+                <h3>${reserva.nome}</h3>
+
+                <p>
+                    <b>Diária:</b>
+                    R$ ${reserva.preco}
+                </p>
+
+                <p>
+                    <b>Retirada:</b>
+                    ${reserva.retirada}
+                </p>
+
+                <p>
+                    <b>Devolução:</b>
+                    ${reserva.devolucao}
+                </p>
+
+                <p>
+                    <b>Agência:</b>
+                    ${reserva.agencia}
+                </p>
+
+                <p style="color:#bb86fc;">
+                    Pagamento na retirada
+                </p>
+
+            </div>
+
+        </div>
+
+        `;
+
+    });
+
+}
+
+function fecharCarrinho(){
+
+    document.getElementById('modalCarrinho')
+    .style.display = 'none';
+
 }
