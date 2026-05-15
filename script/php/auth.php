@@ -31,8 +31,8 @@ if ($action === 'register') {
 
     $termo = isset($_POST['termo']) && $_POST['termo'] == 'true' ? 1 : 0;
 
-    // Novo usuário sempre será admin = 0
-    $eh_admin = 0;
+
+    $eh_admin = isset($_POST['admin']) && $_POST['admin'] == 'true' ? 1 :  0;
 
     // Se assinou o termo, carteira e vencimento ficam vazios
     if ($termo) {

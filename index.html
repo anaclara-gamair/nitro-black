@@ -71,6 +71,10 @@
             <input type="checkbox" id="reg-termo" style="width: auto; margin:0;">
             <label for="reg-termo" style="margin:0; font-size: 12px;">Não tenho CNH. Assino o termo de responsabilidade de locação.</label>
           </div>
+          <div class="input-group" style="display:flex; align-items:center; gap: 10px; margin-bottom: 20px;">
+            <input type="checkbox" id="reg-admin" style="width: auto; margin:0;">
+            <label for="reg-admin" style="margin:0; font-size: 12px;">Conta ADMIN</label>
+          </div>
           <button type="submit" class="login-btn">Cadastrar</button>
         </form>
 
@@ -84,8 +88,14 @@
 
   <script>
     // Se já estiver logado, vai pra home que está na pasta pages
-    if (localStorage.getItem('nitro_user')) {
-      window.location.href = 'pages/home.html';
+     if (localStorage.getItem('nitro_user')) {
+        const userDataStr = localStorage.getItem('nitro_user');
+        const user = JSON.parse(userDataStr);
+        if (user.eh_admin == 1 || user.eh_admin == "1"){
+          window.location.href = 'pages/admin.html';
+        }else{
+          window.location.href = 'pages/home.html';
+        }
     }
 
     const light = document.getElementById("light");
@@ -128,8 +138,14 @@
       const data = await res.json();
 
       if(data.status === 'success') {
-        localStorage.setItem('nitro_user', JSON.stringify(data.user));
-        window.location.href = 'pages/home.html'; // Redireciona para a pasta pages
+       // Ajuste no redirecionamento do login
+        if(data.user.eh_admin == 1 || data.user.eh_admin == "1") {
+            window.location.href = 'pages/admin.html';
+        } else {
+            window.location.href = 'pages/home.html'; 
+        }
+        
+    
       } else {
         alert(data.message);
       }
@@ -146,6 +162,8 @@
       formData.append('carteira', document.getElementById('reg-cnh').value);
       formData.append('vencimento', document.getElementById('reg-vencimento').value);
       formData.append('termo', document.getElementById('reg-termo').checked);
+      formData.append('admin', document.getElementById('reg-admin').checked);
+      
 
       const res = await fetch('script/php/auth.php', { method: 'POST', body: formData });
       const data = await res.json();
