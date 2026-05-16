@@ -673,3 +673,29 @@ input[type="date"]::-webkit-calendar-picker-indicator{
   color:#d7c7ff;
   margin-bottom:8px;
 }
+
+/* NOVO VISUAL DO CARRINHO (Lado a Lado - 3 por linha) */
+#modalCarrinho .modal-content {
+    max-width: 1100px;
+    width: 95%;
+}
+
+#listaReservas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    max-height: 65vh;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+#listaReservas::-webkit-scrollbar { width: 8px; }
+#listaReservas::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
+#listaReservas::-webkit-scrollbar-thumb { background: #bb86fc; border-radius: 10px; }
+
+#listaReservas .reserva-card {
+    margin-top: 0; 
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
