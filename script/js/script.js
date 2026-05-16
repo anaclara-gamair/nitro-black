@@ -22,6 +22,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Carregar os carros do banco
     loadCars();
+    // Bloqueia datas anteriores a hoje
+    const hoje = new Date().toISOString().split('T')[0];
+    const dataRetirada = document.getElementById("data-busca-retirada");
+    const dataDevolucao = document.getElementById("data-busca-devolucao");
+    
+    if(dataRetirada && dataDevolucao) {
+        dataRetirada.min = hoje;
+        dataRetirada.addEventListener('change', (e) => {
+            dataDevolucao.min = e.target.value; // Devolução não pode ser antes da retirada
+        });
+    }
 });
 
 
@@ -75,11 +86,7 @@ async function loadCars() {
                           </div>
 
                           <button
-                            onclick="abrirReserva(
-                            '${carro.marca_modelo}',
-                            '${carro.foto_url}',
-                            '${precoFormatado}'
-                            )"
+                            onclick="abrirReserva(${carro.id}, '${carro.marca_modelo}', '${carro.foto_url}', '${precoFormatado}', ${carro.location_id})"
                             >
                                 Reservar
                             </button>
@@ -136,167 +143,232 @@ if(regiaoSelect) {
 
 let carrinho = 0;
 
-function abrirReserva(nome, foto, preco){
 
-  document.getElementById('modalReserva')
-  .style.display = 'flex';
 
-  window.carroSelecionado = {
-      nome,
-      foto,
-      preco
-  };
+function abrirReserva(car_id, nome, foto, preco, loc_id) {
+    document.getElementById('modalReserva').style.display = 'flex';
 
-}
+    window.carroSelecionado = { car_id, nome, foto, preco, loc_id };
 
-function fecharReserva(){
-
-    document.getElementById('modalReserva').style.display = 'none';
-
-}
-
-function confirmarReserva(){
-
-  const retirada =
-  document.getElementById('dataRetirada').value;
-
-  const devolucao =
-  document.getElementById('dataDevolucao').value;
-
-  const agencia =
-  document.getElementById('agenciaReserva').value;
-
-  if(!retirada || !devolucao || !agencia){
-
-      alert('Preencha todos os campos.');
-
-      return;
-
-  }
-
-  reservas.push({
-
-      nome: window.carroSelecionado.nome,
-
-      foto: window.carroSelecionado.foto,
-
-      preco: window.carroSelecionado.preco,
-
-      retirada,
-      devolucao,
-      agencia
-
-  });
-
-  carrinho++;
-
-  document.getElementById('cartCount')
-  .innerText = carrinho;
-
-  document.getElementById('cartFloating')
-  .style.display = 'flex';
-
-  fecharReserva();
-
-  alert(
-      'Reserva adicionada ao carrinho!'
-  );
-
-}
-
-document.getElementById('cartFloating')
-.addEventListener('click', abrirCarrinho);
-
-function abrirCarrinho(){
-
-    document.getElementById('modalCarrinho')
-    .style.display = 'flex';
-
-    const lista =
-    document.getElementById('listaReservas');
-
-    lista.innerHTML = '';
-
-    reservas.forEach(reserva => {
-
-        lista.innerHTML += `
-
-        <div class="reserva-card">
-
-            <img src="${reserva.foto}">
-
-            <div class="reserva-info">
-
-                <h3>${reserva.nome}</h3>
-
-                <p>
-                    <b>Diária:</b>
-                    R$ ${reserva.preco}
-                </p>
-
-                <p>
-                    <b>Retirada:</b>
-                    ${reserva.retirada}
-                </p>
-
-                <p>
-                    <b>Devolução:</b>
-                    ${reserva.devolucao}
-                </p>
-
-                <p>
-                    <b>Agência:</b>
-                    ${reserva.agencia}
-                </p>
-
-                <p style="color:#bb86fc;">
-                    Pagamento na retirada
-                </p>
-
-            </div>
-
-        </div>
-
-        `;
-
+    // Aplica o bloqueio de datas no modal normal também
+    const hoje = new Date().toISOString().split('T')[0];
+    const dataRet = document.getElementById('dataRetirada');
+    const dataDev = document.getElementById('dataDevolucao');
+    
+    dataRet.min = hoje;
+    dataRet.addEventListener('change', (e) => {
+        dataDev.min = e.target.value;
     });
-
 }
 
-function fecharCarrinho(){
-
-    document.getElementById('modalCarrinho')
-    .style.display = 'none';
-
+function fecharReserva() {
+    document.getElementById('modalReserva').style.display = 'none';
 }
-// LÓGICA DE FILTRAGEM COM EXIBIÇÃO EM POPUP
-document.querySelector(".search-btn").addEventListener("click", async () => {
-    const locId = document.getElementById("retirada-select").value;
-    const listaFiltrados = document.getElementById("listaCarrosFiltrados");
 
-    if(!locId) {
-        alert("Por favor, selecione uma Região e uma Agência de Retirada.");
+async function confirmarReserva() {
+    const retirada = document.getElementById('dataRetirada').value;
+    const devolucao = document.getElementById('dataDevolucao').value;
+
+    if(!retirada || !devolucao) {
+        alert('Preencha as datas de retirada e devolução.');
         return;
     }
 
-    listaFiltrados.innerHTML = '<p style="color: white; text-align: center; grid-column: 1/3;">Buscando frota...</p>';
+    const userDataStr = localStorage.getItem('nitro_user');
+    if(!userDataStr) {
+        alert("Você precisa estar logado para fazer uma reserva!");
+        window.location.href = '../index.html';
+        return;
+    }
+
+    const user = JSON.parse(userDataStr);
+    const formData = new FormData();
+    formData.append('user_id', user.id);
+    formData.append('car_id', window.carroSelecionado.car_id);
+    formData.append('data_retirada', retirada);
+    formData.append('data_devolucao', devolucao);
+    formData.append('loc_id', window.carroSelecionado.loc_id);
+
+    try {
+        const res = await fetch('../script/php/fazer_reserva.php', { method: 'POST', body: formData });
+        const data = await res.json();
+        
+        if(data.status === 'success') {
+            alert('Reserva confirmada e salva com sucesso!');
+            fecharReserva();
+            carregarCarrinhoDoBanco(user.id); // Atualiza o carrinho imediatamente
+        } else {
+            alert("Erro do servidor: " + data.message);
+        }
+    } catch(e) {
+        alert('Erro de conexão ao confirmar reserva.');
+    }
+}
+document.getElementById('cartFloating')
+.addEventListener('click', abrirCarrinho);
+async function carregarCarrinhoDoBanco(userId) {
+    try {
+        const response = await fetch(`../script/php/obter_reservas.php?user_id=${userId}`);
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            // Mapeia adicionando o ID da reserva (booking_id) retornado pelo PHP
+            reservas = data.reservas.map(res => ({
+                id: res.booking_id, 
+                nome: res.marca_modelo,
+                foto: res.foto_url,
+                preco: parseFloat(res.valor_aluguel_dia).toLocaleString('pt-BR', {minimumFractionDigits: 2}),
+                retirada: res.data_retirada,
+                devolucao: res.data_devolucao,
+                agencia: res.nome_agencia
+            }));
+
+            carrinho = reservas.length;
+            document.getElementById('cartCount').innerText = carrinho;
+            document.getElementById('cartFloating').style.display = carrinho > 0 ? 'flex' : 'none';
+        }
+    } catch (e) {
+        console.error("Erro ao sincronizar carrinho persistente:", e);
+    }
+}
+
+function abrirCarrinho() {
+    document.getElementById('modalCarrinho').style.display = 'flex';
+    const lista = document.getElementById('listaReservas');
+    lista.innerHTML = '';
+
+    if(reservas.length === 0) {
+        lista.innerHTML = '<p style="color: #bca9d6; text-align: center; padding: 20px;">Você não possui nenhuma reserva ativa.</p>';
+        return;
+    }
+
+    // Calcula a data de Hoje à meia-noite para comparações justas
+    const hojeObj = new Date();
+    hojeObj.setHours(0, 0, 0, 0);
+
+    reservas.forEach(reserva => {
+        const dRetirada = reserva.retirada.split('-').reverse().join('/');
+        const dDevolucao = reserva.devolucao.split('-').reverse().join('/');
+
+        // Logica para permitir ou bloquear cancelamento (Mínimo 1 dia)
+        const retObj = new Date(reserva.retirada + "T00:00:00");
+        const diffTime = retObj - hojeObj;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        let htmlCancelamento = '';
+        if (diffDays >= 1) {
+            htmlCancelamento = `
+                <button onclick="cancelarReserva(${reserva.id})" style="background: rgba(255, 47, 117, 0.2); border: 1px solid #ff2f75; padding: 8px 15px; border-radius: 10px; color: #ff2f75; cursor: pointer; font-size: 13px; margin-top: 15px; transition: 0.3s; width: 100%;">
+                    <i class="fa-solid fa-xmark"></i> Cancelar Reserva
+                </button>
+            `;
+        } else {
+            htmlCancelamento = `
+                <p style="color: #ff6b6b; font-size: 12px; margin-top: 15px; background: rgba(255, 107, 107, 0.1); padding: 8px; border-radius: 8px; text-align: center;">
+                    <i class="fa-solid fa-lock"></i> Cancelamento bloqueado (faltam menos de 24h)
+                </p>
+            `;
+        }
+
+        lista.innerHTML += `
+        <div class="reserva-card" style="position: relative;">
+            <img src="${reserva.foto}">
+            <div class="reserva-info">
+                <h3>${reserva.nome}</h3>
+                <p><b>Diária:</b> R$ ${reserva.preco}</p>
+                <p><b>Retirada:</b> ${dRetirada}</p>
+                <p><b>Devolução:</b> ${dDevolucao}</p>
+                <p><b>Agência:</b> ${reserva.agencia}</p>
+                ${htmlCancelamento}
+            </div>
+        </div>
+        `;
+    });
+}
+
+// Função de exclusão no Banco com atualização do Carrinho
+async function cancelarReserva(booking_id) {
+    if(!confirm("Atenção: Tem certeza que deseja cancelar esta reserva?")) return;
+
+    const formData = new FormData();
+    formData.append('booking_id', booking_id);
+
+    try {
+        const res = await fetch('../script/php/cancelar_reserva.php', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if(data.status === 'success') {
+            alert('Reserva cancelada com sucesso!');
+            const user = JSON.parse(localStorage.getItem('nitro_user'));
+            
+            // Recarrega os dados do banco e redesenha o carrinho
+            await carregarCarrinhoDoBanco(user.id);
+            abrirCarrinho(); 
+        } else {
+            alert('Erro ao cancelar: ' + data.message);
+        }
+    } catch(e) {
+        alert('Erro de conexão ao tentar cancelar a reserva.');
+    }
+}
+
+// Função de exclusão no Banco com atualização do Carrinho
+async function cancelarReserva(booking_id) {
+    if(!confirm("Atenção: Tem certeza que deseja cancelar esta reserva?")) return;
+
+    const formData = new FormData();
+    formData.append('booking_id', booking_id);
+
+    try {
+        const res = await fetch('../script/php/cancelar_reserva.php', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if(data.status === 'success') {
+            alert('Reserva cancelada com sucesso!');
+            const user = JSON.parse(localStorage.getItem('nitro_user'));
+            
+            // Recarrega os dados do banco e redesenha o carrinho
+            await carregarCarrinhoDoBanco(user.id);
+            abrirCarrinho(); 
+        } else {
+            alert('Erro ao cancelar: ' + data.message);
+        }
+    } catch(e) {
+        alert('Erro de conexão ao tentar cancelar a reserva.');
+    }
+}
+document.querySelector(".search-btn").addEventListener("click", async () => {
+    const locId = document.getElementById("retirada-select").value;
+    const retirada = document.getElementById("data-busca-retirada").value;
+    const devolucao = document.getElementById("data-busca-devolucao").value;
+    const listaFiltrados = document.getElementById("listaCarrosFiltrados");
+    const userDataStr = localStorage.getItem('nitro_user');
+    
+    if(!locId || !retirada || !devolucao) {
+        alert("Selecione a agência, data de retirada e devolução!");
+        return;
+    }
+
+    listaFiltrados.innerHTML = '<p style="color: white; text-align: center; grid-column: 1/3;">Buscando frota disponível nas datas escolhidas...</p>';
     document.getElementById("modalFiltro").style.display = "flex";
 
     try {
-        const response = await fetch('../script/php/get_cars.php');
+        // Manda as datas pro PHP verificar quem já tá alugado
+        const response = await fetch(`../script/php/get_cars.php?retirada=${retirada}&devolucao=${devolucao}`);
         const data = await response.json();
 
         if(data.status === 'success') {
             const carrosFiltrados = data.carros.filter(c => c.location_id == locId);
 
             if(carrosFiltrados.length === 0) {
-                listaFiltrados.innerHTML = '<p style="color: #ff6b6b; text-align: center; grid-column: 1/3; padding: 20px;">Nenhum veículo nesta agência no momento.</p>';
+                listaFiltrados.innerHTML = '<p style="color: #ff6b6b; text-align: center; grid-column: 1/3; padding: 20px;">Nenhum veículo disponível para essas datas nesta agência.</p>';
                 return;
             }
 
             listaFiltrados.innerHTML = '';
             carrosFiltrados.forEach(carro => {
                 const precoFormatado = parseFloat(carro.valor_aluguel_dia).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                
                 listaFiltrados.innerHTML += `
                     <div class="reserva-card" style="margin-top: 0; display: flex; flex-direction: column; justify-content: space-between; background: rgba(255,255,255,0.02); border-radius: 18px;">
                         <img src="${carro.foto_url}" style="height: 140px; object-fit: cover;">
@@ -305,17 +377,135 @@ document.querySelector(".search-btn").addEventListener("click", async () => {
                                 <h3 style="font-size: 18px; margin-bottom: 5px;">${carro.marca_modelo}</h3>
                                 <p style="font-size: 13px; color: #bca9d6; margin-bottom: 10px;">R$ ${precoFormatado} / dia</p>
                             </div>
-                            <button class="confirm-btn" style="height: 40px; font-size: 14px; border-radius: 10px;" onclick="document.getElementById('modalFiltro').style.display='none'; abrirReserva('${carro.marca_modelo}', '${carro.foto_url}', '${precoFormatado}')">
-                                Escolher
+                            <button class="confirm-btn" style="height: 40px; font-size: 14px; border-radius: 10px;" onclick="fazerReservaReal(${carro.id}, '${retirada}', '${devolucao}', ${locId})">
+                                Confirmar Reserva
                             </button>
                         </div>
                     </div>
                 `;
             });
-        } else {
-            listaFiltrados.innerHTML = `<p style="color: white;">Erro: ${data.message}</p>`;
         }
     } catch(e) {
         listaFiltrados.innerHTML = '<p style="color: white;">Erro de conexão com o servidor.</p>';
     }
 });
+
+// Função para fazer a reserva no Banco de Dados
+async function fazerReservaReal(car_id, retirada, devolucao, loc_id) {
+    const userDataStr = localStorage.getItem('nitro_user');
+    if(!userDataStr) {
+        alert("Você precisa estar logado para fazer uma reserva!");
+        window.location.href = '../index.html';
+        return;
+    }
+
+    const user = JSON.parse(userDataStr);
+    const formData = new FormData();
+    formData.append('user_id', user.id);
+    formData.append('car_id', car_id);
+    formData.append('data_retirada', retirada);
+    formData.append('data_devolucao', devolucao);
+    formData.append('loc_id', loc_id);
+
+    try {
+        const res = await fetch('../script/php/fazer_reserva.php', { method: 'POST', body: formData });
+        const data = await res.json();
+        
+        if(data.status === 'success') {
+            alert("Reserva confirmada com sucesso! O carro já é seu nessas datas.");
+            document.getElementById("modalFiltro").style.display = "none";
+            carregarCarrinhoDoBanco(user.id);
+        } else {
+            alert(data.message);
+        }
+    } catch(e) {
+        alert("Erro ao confirmar reserva.");
+    }
+}
+
+// FUNÇÃO NOVA: Puxa as reservas ativas direto do banco de dados ao iniciar
+async function carregarCarrinhoDoBanco(userId) {
+    try {
+        const response = await fetch(`../script/php/obter_reservas.php?user_id=${userId}`);
+        const data = await response.json();
+
+        if (data.status === 'success' && data.reservas.length > 0) {
+            // Sincroniza a memória do app com os dados reais do banco
+            reservas = data.reservas.map(res => ({
+                nome: res.marca_modelo,
+                foto: res.foto_url,
+                preco: parseFloat(res.valor_aluguel_dia).toLocaleString('pt-BR', {minimumFractionDigits: 2}),
+                retirada: res.data_retirada,
+                devolucao: res.data_devolucao,
+                agencia: res.nome_agencia
+            }));
+
+            // Atualiza o contador flutuante na tela
+            carrinho = reservas.length;
+            document.getElementById('cartCount').innerText = carrinho;
+            document.getElementById('cartFloating').style.display = 'flex';
+        }
+    } catch (e) {
+        console.error("Erro ao sincronizar carrinho persistente:", e);
+    }
+}
+
+// FUNÇÃO REESCRITA: Renderiza as informações limpas vindas do banco de dados
+function abrirCarrinho(){
+    document.getElementById('modalCarrinho').style.display = 'flex';
+    const lista = document.getElementById('listaReservas');
+    lista.innerHTML = '';
+
+    if(reservas.length === 0) {
+        lista.innerHTML = '<p style="color: #bca9d6; text-align: center; padding: 20px;">Você não possui nenhuma reserva ativa.</p>';
+        return;
+    }
+
+    reservas.forEach(reserva => {
+        // Formata as datas vindas do banco (AAAA-MM-DD) para o padrão visual (DD/MM/AAAA)
+        const dRetirada = reserva.retirada.split('-').reverse().join('/');
+        const dDevolucao = reserva.devolucao.split('-').reverse().join('/');
+
+        lista.innerHTML += `
+        <div class="reserva-card">
+            <img src="${reserva.foto}">
+            <div class="reserva-info">
+                <h3>${reserva.nome}</h3>
+                <p><b>Diária:</b> R$ ${reserva.preco}</p>
+                <p><b>Retirada:</b> ${dRetirada}</p>
+                <p><b>Devolução:</b> ${dDevolucao}</p>
+                <p><b>Agência:</b> ${reserva.agencia}</p>
+                <p style="color:#bb86fc; font-weight: 600; margin-top: 5px;">
+                    <i class="fa-solid fa-circle-info"></i> Pagamento presencial na retirada
+                </p>
+            </div>
+        </div>
+        `;
+    });
+}
+// FUNÇÃO NOVA: Puxa as reservas ativas direto do banco de dados ao iniciar
+async function carregarCarrinhoDoBanco(userId) {
+    try {
+        const response = await fetch(`../script/php/obter_reservas.php?user_id=${userId}`);
+        const data = await response.json();
+
+        if (data.status === 'success' && data.reservas.length > 0) {
+            // Sincroniza a memória do app com os dados reais do banco
+            reservas = data.reservas.map(res => ({
+                nome: res.marca_modelo,
+                foto: res.foto_url,
+                preco: parseFloat(res.valor_aluguel_dia).toLocaleString('pt-BR', {minimumFractionDigits: 2}),
+                retirada: res.data_retirada,
+                devolucao: res.data_devolucao,
+                agencia: res.nome_agencia
+            }));
+
+            // Atualiza o contador flutuante na tela
+            carrinho = reservas.length;
+            document.getElementById('cartCount').innerText = carrinho;
+            document.getElementById('cartFloating').style.display = 'flex';
+        }
+    } catch (e) {
+        console.error("Erro ao sincronizar carrinho persistente:", e);
+    }
+}

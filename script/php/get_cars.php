@@ -12,13 +12,26 @@ try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Faz um JOIN para pegar os dados do Carro + a Descrição do veículo
-    $stmt = $pdo->query("
-        SELECT c.id, c.placa, c.marca_modelo, c.ano, c.valor_aluguel_dia, c.foto_url, c.status,
+   $retirada = $_GET['retirada'] ?? null;
+    $devolucao = $_GET['devolucao'] ?? null;
+
+    $sql = "SELECT c.id, c.placa, c.marca_modelo, c.ano, c.valor_aluguel_dia, c.foto_url, c.status, c.location_id,
                d.cor, d.acessorios, d.detalhes_tecnicos, d.estado_de_uso, d.km
-        FROM Carros c
-        INNER JOIN Descricoes_Veiculo d ON c.id_descricao = d.id
-        WHERE c.status = 1
-    ");
+            FROM Carros c
+            INNER JOIN Descricoes_Veiculo d ON c.id_descricao = d.id
+            WHERE c.status = 1";
+
+    // Se passou as datas, esconde os carros que já tem reserva nesse período
+    if ($retirada && $devolucao) {
+        $sql .= " AND c.id NOT IN (
+                    SELECT car_id FROM bookings 
+                    WHERE (data_retirada <= :devolucao AND data_devolucao >= :retirada)
+                  )";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute(['retirada' => $retirada, 'devolucao' => $devolucao]);
+    } else {
+        $stmt = $pdo->query($sql);
+    }
     
     $carros = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

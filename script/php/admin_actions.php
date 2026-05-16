@@ -34,6 +34,57 @@ try {
         fclose($output);
         exit;
     }
+    // ==========================================
+    // ESTATÍSTICAS DO DASHBOARD (VALORES REAIS)
+    // ==========================================
+    if ($action === 'get_dashboard') {
+        // Mês atual
+        $stmtAtual = $pdo->query("SELECT COUNT(*) as qtd, IFNULL(SUM(c.valor_aluguel_dia * DATEDIFF(b.data_devolucao, b.data_retirada)), 0) as fat FROM bookings b JOIN Carros c ON b.car_id = c.id WHERE MONTH(b.data_retirada) = MONTH(CURRENT_DATE()) AND YEAR(b.data_retirada) = YEAR(CURRENT_DATE())");
+        $atual = $stmtAtual->fetch(PDO::FETCH_ASSOC);
+
+        // Mês passado
+        $stmtPassado = $pdo->query("SELECT COUNT(*) as qtd FROM bookings WHERE MONTH(data_retirada) = MONTH(CURRENT_DATE() - INTERVAL 1 MONTH) AND YEAR(data_retirada) = YEAR(CURRENT_DATE() - INTERVAL 1 MONTH)");
+        $passado = $stmtPassado->fetch(PDO::FETCH_ASSOC);
+
+        echo json_encode(["status" => "success", "stats" => [
+            "atual" => $atual['qtd'],
+            "passado" => $passado['qtd'],
+            "faturamento" => $atual['fat']
+        ]]);
+        exit;
+    }
+
+    // ==========================================
+    // EXPORTAR RELATÓRIO EXCEL (RESUMO OU DETALHADO)
+    // ==========================================
+    if ($action === 'export_financial') {
+        $mes = $_GET['mes'] ?? 'all';
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=relatorio_nitroblack.csv');
+        $output = fopen('php://output', 'w');
+        fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF)); // BOM UTF-8
+
+        if ($mes === 'all') {
+            fputcsv($output, ['Mes', 'Total de Locacoes', 'Faturamento Bruto (R$)']);
+            // Gera um resumo de cada mês do ano atual
+            for ($i = 1; $i <= 12; $i++) {
+                $stmt = $pdo->prepare("SELECT COUNT(*) as locacoes, IFNULL(SUM(c.valor_aluguel_dia * DATEDIFF(b.data_devolucao, b.data_retirada)), 0) as fat FROM bookings b JOIN Carros c ON b.car_id = c.id WHERE MONTH(b.data_retirada) = ? AND YEAR(b.data_retirada) = YEAR(CURRENT_DATE())");
+                $stmt->execute([$i]);
+                $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                fputcsv($output, ["Mês $i", $row['locacoes'], $row['fat']]);
+            }
+        } else {
+            fputcsv($output, ['ID Reserva', 'Cliente', 'Carro (Placa)', 'Data Retirada', 'Data Devolução', 'Valor Total (R$)']);
+            // Busca detalhada para o mês escolhido
+            $stmt = $pdo->prepare("SELECT b.id, u.nome, c.placa, b.data_retirada, b.data_devolucao, (c.valor_aluguel_dia * DATEDIFF(b.data_devolucao, b.data_retirada)) as valor FROM bookings b JOIN users u ON b.user_id = u.id JOIN Carros c ON b.car_id = c.id WHERE MONTH(b.data_retirada) = ? AND YEAR(b.data_retirada) = YEAR(CURRENT_DATE())");
+            $stmt->execute([$mes]);
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                fputcsv($output, [$row['id'], $row['nome'], $row['placa'], $row['data_retirada'], $row['data_devolucao'], $row['valor']]);
+            }
+        }
+        fclose($output);
+        exit;
+    }
 
     // ==========================================
     // BUSCAR USUÁRIOS
