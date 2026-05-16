@@ -10,9 +10,11 @@ document.addEventListener("DOMContentLoaded", () => {
         adminName.innerText = `Olá, ${user.nome}`;
     }
 
-    // 2. Carregar as tabelas do banco
+    // 2. Carregar as tabelas e dados reais do banco
     loadAdminCars();
     loadAdminUsers();
+    loadDashboard();
+    loadExportMonths(); 
 
     // 3. Lógica das Abas (Sidebar)
     const menuItems = document.querySelectorAll(".menu-item");
@@ -28,6 +30,15 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById(targetId).classList.add("active");
         });
     });
+
+    // 4. DOWNLOAD DO EXCEL INTELIGENTE FILTRADO POR MÊS
+    const btnExport = document.getElementById('btn-exportar-financeiro');
+    if(btnExport) {
+        btnExport.addEventListener('click', () => {
+            const mesEscolhido = document.getElementById('export-mes').value;
+            window.location.href = `../script/php/admin_actions.php?action=export_financial&mes=${mesEscolhido}`;
+        });
+    }
 
     // ==========================================
     // LÓGICA: ADICIONAR VEÍCULO
@@ -51,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const formAddCar = document.getElementById('form-add-car');
     if(formAddCar) {
         formAddCar.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Evita recarregar a tela (e o bug do clique duplo)
+            e.preventDefault(); 
             
             const formData = new FormData();
             formData.append('action', 'add_car');
@@ -77,11 +88,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     formAddCar.reset();
                     imgPreviewContainer.style.display = 'none';
                     loadAdminCars();
+                    loadDashboard(); // Recarrega finanças após adicionar carro
                 } else {
                     alert("Erro: " + data.message);
                 }
             } catch(err) {
-                console.error(err);
                 alert("Erro de conexão ao salvar veículo.");
             }
         });
@@ -133,16 +144,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     alert("Erro: " + data.message);
                 }
             } catch(err) {
-                console.error(err);
                 alert("Erro de conexão ao salvar usuário.");
             }
-        });
-    }
-    // ACIONAMENTO DO DOWNLOAD DO EXCEL VIA DASHBOARD
-    const btnExport = document.getElementById('btn-exportar-financeiro');
-    if(btnExport) {
-        btnExport.addEventListener('click', () => {
-            window.location.href = '../script/php/admin_actions.php?action=export_financial';
         });
     }
 });
@@ -153,6 +156,20 @@ document.addEventListener("DOMContentLoaded", () => {
 function openModal(modalId) { document.getElementById(modalId).style.display = 'flex'; }
 function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
 function logout() { localStorage.removeItem('nitro_user'); window.location.href = '../index.html'; }
+
+async function loadDashboard() {
+    try {
+        const res = await fetch('../script/php/admin_actions.php?action=get_dashboard');
+        const data = await res.json();
+        if(data.status === 'success') {
+            document.getElementById('dash-locacoes-passado').innerText = data.stats.passado;
+            document.getElementById('dash-locacoes-atual').innerText = data.stats.atual;
+            document.getElementById('dash-faturamento').innerText = 'R$ ' + parseFloat(data.stats.faturamento).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        }
+    } catch(e) { 
+        console.error("Erro ao carregar faturamento real no painel", e); 
+    }
+}
 
 async function loadAdminUsers() {
     const tbody = document.getElementById('users-tbody');
@@ -215,5 +232,38 @@ async function deleteCar(id) {
         const res = await fetch('../script/php/admin_actions.php', { method: 'POST', body: formData });
         const data = await res.json();
         if (data.status === 'success') { loadAdminCars(); } else { alert(data.message); }
+    }
+}
+
+// ==========================================
+// ALIMENTA O SELECT DE EXPORTAÇÃO AUTOMATICAMENTE COM MESES REAIS
+// ==========================================
+async function loadExportMonths() {
+    const select = document.getElementById('export-mes');
+    if(!select) return;
+    
+    try {
+        const res = await fetch('../script/php/admin_actions.php?action=get_booking_months');
+        const data = await res.json();
+        
+        if(data.status === 'success') {
+            // Limpa o seletor deixando apenas a opção padrão
+            select.innerHTML = '<option value="all" style="background:#07000f">Ano Resumido</option>';
+            
+            const mesesNomes = {
+                '01': 'Jan', '02': 'Fev', '03': 'Mar', '04': 'Abr', '05': 'Mai', '06': 'Jun',
+                '07': 'Jul', '08': 'Ago', '09': 'Set', '10': 'Out', '11': 'Nov', '12': 'Dez'
+            };
+
+            data.meses.forEach(m => {
+                const partes = m.ano_mes.split('-'); // Separa o Ano e o Mês [2026, 05]
+                const nomeMes = mesesNomes[partes[1]] || partes[1];
+                
+                // Insere dinamicamente o mês na lista de escolhas
+                select.innerHTML += `<option value="${m.ano_mes}" style="background:#07000f">${nomeMes} / ${partes[0]} (Detalhado)</option>`;
+            });
+        }
+    } catch(e) { 
+        console.error("Erro ao sincronizar os meses de faturamento.", e); 
     }
 }
