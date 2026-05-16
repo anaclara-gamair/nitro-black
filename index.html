@@ -87,94 +87,113 @@
   </div>
 
   <script>
-    // Se já estiver logado, vai pra home que está na pasta pages
-     if (localStorage.getItem('nitro_user')) {
-        const userDataStr = localStorage.getItem('nitro_user');
+// 1. Verificação de Cache com segurança (Evita travar o JS se o cache estiver corrompido)
+try {
+    const userDataStr = localStorage.getItem('nitro_user');
+    if (userDataStr) {
         const user = JSON.parse(userDataStr);
-        if (user.eh_admin == 1 || user.eh_admin == "1"){
-          window.location.href = 'pages/admin.html';
-        }else{
-          window.location.href = 'pages/home.html';
-        }
-    }
-
-    const light = document.getElementById("light");
-    document.addEventListener("mousemove", (e) => {
-      light.style.left = e.clientX + "px";
-      light.style.top = e.clientY + "px";
-    });
-
-    const loginForm = document.querySelector(".login-form");
-    const registerForm = document.querySelector(".register-form");
-    document.getElementById("show-register").addEventListener("click", (e) => {
-      e.preventDefault(); loginForm.style.display = "none"; registerForm.style.display = "block";
-    });
-    document.getElementById("show-login").addEventListener("click", (e) => {
-      e.preventDefault(); registerForm.style.display = "none"; loginForm.style.display = "block";
-    });
-
-    const termoCheckbox = document.getElementById('reg-termo');
-    const cnhInput = document.getElementById('reg-cnh');
-    const vencInput = document.getElementById('reg-vencimento');
-
-    termoCheckbox.addEventListener('change', () => {
-      if(termoCheckbox.checked) {
-        cnhInput.disabled = true; cnhInput.value = '';
-        vencInput.disabled = true; vencInput.value = '';
-      } else {
-        cnhInput.disabled = false; vencInput.disabled = false;
-      }
-    });
-
-    // Submissão do Login (Atenção ao caminho: script/php/auth.php)
-    document.getElementById('form-login').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData();
-      formData.append('action', 'login');
-      formData.append('email', document.getElementById('login-email').value);
-      formData.append('senha', document.getElementById('login-senha').value);
-
-      const res = await fetch('script/php/auth.php', { method: 'POST', body: formData });
-      const data = await res.json();
-
-      if(data.status === 'success') {
-       // Ajuste no redirecionamento do login
-        if(data.user.eh_admin == 1 || data.user.eh_admin == "1") {
+        if (user.eh_admin == 1 || user.eh_admin == "1") {
             window.location.href = 'pages/admin.html';
         } else {
-            window.location.href = 'pages/home.html'; 
+            window.location.href = 'pages/home.html';
         }
-        
-    
-      } else {
-        alert(data.message);
-      }
-    });
+    }
+} catch (e) {
+    localStorage.removeItem('nitro_user'); // Limpa o cache quebrado automaticamente
+}
 
-    // Submissão do Cadastro
-    document.getElementById('form-register').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData();
-      formData.append('action', 'register');
-      formData.append('nome', document.getElementById('reg-nome').value);
-      formData.append('email', document.getElementById('reg-email').value);
-      formData.append('senha', document.getElementById('reg-senha').value);
-      formData.append('carteira', document.getElementById('reg-cnh').value);
-      formData.append('vencimento', document.getElementById('reg-vencimento').value);
-      formData.append('termo', document.getElementById('reg-termo').checked);
-      formData.append('admin', document.getElementById('reg-admin').checked);
-      
+// 2. Efeito da Luz do Mouse
+const light = document.getElementById("light");
+document.addEventListener("mousemove", (e) => {
+    light.style.left = e.clientX + "px";
+    light.style.top = e.clientY + "px";
+});
 
-      const res = await fetch('script/php/auth.php', { method: 'POST', body: formData });
-      const data = await res.json();
+// 3. Alternar entre Login e Cadastro
+const loginForm = document.querySelector(".login-form");
+const registerForm = document.querySelector(".register-form");
 
-      if(data.status === 'success') {
-        alert("Cadastro realizado! Faça login.");
-        document.getElementById("show-login").click();
-      } else {
-        alert(data.message);
-      }
-    });
+document.getElementById("show-register").addEventListener("click", (e) => {
+    e.preventDefault(); 
+    loginForm.style.display = "none"; 
+    registerForm.style.display = "block";
+});
+
+document.getElementById("show-login").addEventListener("click", (e) => {
+    e.preventDefault(); 
+    registerForm.style.display = "none"; 
+    loginForm.style.display = "block";
+});
+
+// 4. Lógica do Checkbox de CNH
+const termoCheckbox = document.getElementById('reg-termo');
+const cnhInput = document.getElementById('reg-cnh');
+const vencInput = document.getElementById('reg-vencimento');
+
+termoCheckbox.addEventListener('change', () => {
+    if(termoCheckbox.checked) {
+        cnhInput.disabled = true; cnhInput.value = '';
+        vencInput.disabled = true; vencInput.value = '';
+    } else {
+        cnhInput.disabled = false; vencInput.disabled = false;
+    }
+});
+
+// 5. Submissão do Login
+document.getElementById('form-login').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append('action', 'login');
+    formData.append('email', document.getElementById('login-email').value);
+    formData.append('senha', document.getElementById('login-senha').value);
+
+    try {
+        const res = await fetch('script/php/auth.php', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if(data.status === 'success') {
+            localStorage.setItem('nitro_user', JSON.stringify(data.user)); // Salva no cache corretamente
+            if(data.user.eh_admin == 1 || data.user.eh_admin == "1") {
+                window.location.href = 'pages/admin.html';
+            } else {
+                window.location.href = 'pages/home.html'; 
+            }
+        } else {
+            alert(data.message);
+        }
+    } catch (err) {
+        alert("Erro ao processar o login.");
+    }
+});
+
+// 6. Submissão do Cadastro
+document.getElementById('form-register').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append('action', 'register');
+    formData.append('nome', document.getElementById('reg-nome').value);
+    formData.append('email', document.getElementById('reg-email').value);
+    formData.append('senha', document.getElementById('reg-senha').value);
+    formData.append('carteira', document.getElementById('reg-cnh').value);
+    formData.append('vencimento', document.getElementById('reg-vencimento').value);
+    formData.append('termo', document.getElementById('reg-termo').checked);
+    formData.append('admin', document.getElementById('reg-admin').checked);
+
+    try {
+        const res = await fetch('script/php/auth.php', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if(data.status === 'success') {
+            alert("Cadastro realizado! Faça login.");
+            document.getElementById("show-login").click();
+        } else {
+            alert(data.message);
+        }
+    } catch (err) {
+        alert("Erro ao realizar o cadastro.");
+    }
+});
   </script>
 </body>
 </html>
+    

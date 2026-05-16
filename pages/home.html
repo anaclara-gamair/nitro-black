@@ -160,6 +160,17 @@
   </div>
 
 </div>
+<div class="modal-reserva" id="modalFiltro" style="display: none;">
+  <div class="modal-content" style="max-width: 700px;">
+    <button class="close-modal" onclick="document.getElementById('modalFiltro').style.display = 'none';">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <h2>Veículos Encontrados</h2>
+    <p class="modal-subtitle">Modelos disponíveis na agência selecionada</p>
+    <div id="listaCarrosFiltrados" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-height: 450px; overflow-y: auto; padding-right: 5px;">
+      </div>
+  </div>
+</div>
 
 
   <script src="../script/js/script.js"></script>

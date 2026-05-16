@@ -138,6 +138,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+    // ACIONAMENTO DO DOWNLOAD DO EXCEL VIA DASHBOARD
+    const btnExport = document.getElementById('btn-exportar-financeiro');
+    if(btnExport) {
+        btnExport.addEventListener('click', () => {
+            window.location.href = '../script/php/admin_actions.php?action=export_financial';
+        });
+    }
 });
 
 // ==========================================
